@@ -1,4 +1,4 @@
-
+var p = console.log
 // -----------------------
 // --- ENUMS, DEFAULTS ---
 // -----------------------
@@ -216,22 +216,22 @@ EagleCanvas.prototype.loadText = function(text) {
 // ---------------
 
 EagleCanvas.prototype.parse = function() {
-
+  // store by eagle name
 	this.eagleLayersByName = {};
+  // store by eagle number
 	this.layersByNumber = {};
+
 	var layers = this.document.getElementsByTagName('layer');
 	for (var layerIdx = 0; layerIdx < layers.length; layerIdx++) {
-		var layer = layers.item(layerIdx);
-		var layerDict = this.parseLayer(layer);
+		var layerDict = this.parseLayer( layers[layerIdx] );
 		this.eagleLayersByName[layerDict.name] = layerDict;
-		this.layersByNumber[layerDict.number] = layerDict;
+		this.layersByNumber[layerDict.number]  = layerDict;
 	}
 
 	this.elements = {};
 	var elements = this.document.getElementsByTagName('element');
 	for (var elementIdx = 0; elementIdx < elements.length; elementIdx++) {
-		var elem = elements.item(elementIdx);
-		var elemDict = this.parseElement(elem);
+		var elemDict = this.parseElement( elements[elementIdx] )
 		this.elements[elemDict.name] = elemDict;
 	}
 
@@ -239,15 +239,14 @@ EagleCanvas.prototype.parse = function() {
 	//hashmap signal name -> hashmap layer number -> hashmap 'wires'->wires array, 'vias'->vias array
 	var signals = this.document.getElementsByTagName('signal');
 	for (var sigIdx = 0; sigIdx < signals.length; sigIdx++) {
-		var signal = signals.item(sigIdx);
+		var signal = signals[sigIdx];
 		var name = signal.getAttribute('name');
 		var signalLayers = {};
 		this.signalItems[name] = signalLayers;
 
 		var wires = signal.getElementsByTagName('wire');
 		for (var wireIdx = 0; wireIdx < wires.length; wireIdx++) {
-			var wire = wires.item(wireIdx);
-			var wireDict = this.parseWire(wire);
+			var wireDict = this.parseWire( wires[wireIdx] );
 			var layer = wireDict.layer;
 			if (!(signalLayers[layer])) signalLayers[layer] = {};
 			var layerItems = signalLayers[layer];
@@ -258,8 +257,7 @@ EagleCanvas.prototype.parse = function() {
 
 		var vias = signal.getElementsByTagName('via');
 		for (var viaIdx = 0; viaIdx < vias.length; viaIdx++) {
-			var via = vias.item(viaIdx);
-			var viaDict = this.parseVia(via);
+			var viaDict = this.parseVia(vias[viaIdx]);
 			var layers = viaDict.layers;
 			if (!(signalLayers[layers])) signalLayers[layers] = {};
 			var layerItems = signalLayers[layers];
@@ -270,7 +268,7 @@ EagleCanvas.prototype.parse = function() {
 
 		var contacts = signal.getElementsByTagName('contactref');
 		for (var contactIdx = 0; contactIdx < contacts.length; contactIdx++) {
-			var contact = contacts.item(contactIdx);
+			var contact = contacts[contactIdx];
 			var elemName = contact.getAttribute('element');
 			var padName = contact.getAttribute('pad');
 			var elem = this.elements[elemName];
@@ -281,11 +279,11 @@ EagleCanvas.prototype.parse = function() {
 	this.packagesByName = {};
 	var packages = this.document.getElementsByTagName('package');
 	for (var packageIdx = 0; packageIdx < packages.length; packageIdx++) {
-		var package = packages.item(packageIdx);
-		var packageName = package.getAttribute('name');
+		var pkg = packages[packageIdx];
+		var packageName = pkg.getAttribute('name');
 
 		var packageSmds = [];
-		var smds = package.getElementsByTagName('smd');
+		var smds = pkg.getElementsByTagName('smd');
 		for (var smdIdx = 0; smdIdx < smds.length; smdIdx++) {
 			var smd = smds[smdIdx];
 			packageSmds.push(this.parseSmd(smd));
@@ -293,7 +291,7 @@ EagleCanvas.prototype.parse = function() {
 
 		var packageWires = [];
 		var bbox = [EagleCanvas.LARGE_NUMBER,EagleCanvas.LARGE_NUMBER,-EagleCanvas.LARGE_NUMBER,-EagleCanvas.LARGE_NUMBER];
-		var wires = package.getElementsByTagName('wire');
+		var wires = pkg.getElementsByTagName('wire');
 		for (var wireIdx = 0; wireIdx < wires.length; wireIdx++) {
 			var wire = wires[wireIdx];
 			var wireDict = this.parseWire(wire);
@@ -309,7 +307,7 @@ EagleCanvas.prototype.parse = function() {
 		}
 		if ((bbox[0] >= bbox[2]) || (bbox[1] >= bbox[3])) bbox = null;
 		var packageTexts = [];
-		var texts = package.getElementsByTagName('text');
+		var texts = pkg.getElementsByTagName('text');
 		for (var textIdx = 0; textIdx < texts.length; textIdx++) {
 			var text = texts[textIdx];
 			packageTexts.push(this.parseText(text));
@@ -323,10 +321,10 @@ EagleCanvas.prototype.parse = function() {
 	this.plainWires = {};
 	var plains = this.document.getElementsByTagName('plain');	//Usually only one
 	for (var plainIdx = 0; plainIdx < plains.length; plainIdx++) {
-		var plain = plains.item(plainIdx);
+		var plain = plains[plainIdx];
 		var wires = plain.getElementsByTagName('wire');
 		for (var wireIdx = 0; wireIdx < wires.length; wireIdx++) {
-			var wire = wires.item(wireIdx);
+			var wire = wires[wireIdx];
 			var wireDict = this.parseWire(wire);
 			var layer = wireDict.layer;
 			if (!this.plainWires[layer]) this.plainWires[layer] = [];
@@ -336,68 +334,65 @@ EagleCanvas.prototype.parse = function() {
 }
 
 EagleCanvas.prototype.parseSmd = function(smd) {
-	var smdX = parseFloat(smd.getAttribute('x'));
-	var smdY = parseFloat(smd.getAttribute('y'));
+	var smdX  = parseFloat(smd.getAttribute('x'));
+	var smdY  = parseFloat(smd.getAttribute('y'));
 	var smdDX = parseFloat(smd.getAttribute('dx'));
 	var smdDY = parseFloat(smd.getAttribute('dy'));
-	var smdLayer = smd.getAttribute('layer');
-	var smdName = smd.getAttribute('name');
-	return {'x1':smdX-0.5*smdDX,'y1':smdY-0.5*smdDY,'x2':smdX+0.5*smdDX,'y2':smdY+0.5*smdDY,'name':smdName,'layer':smdLayer};
+
+	return {'x1'   : smdX-0.5*smdDX,
+	        'y1'   : smdY-0.5*smdDY,
+	        'x2'   : smdX+0.5*smdDX,
+	        'y2'   : smdY+0.5*smdDY,
+	        'name' : smd.getAttribute('name'),
+	        'layer': smd.getAttribute('layer')};
 }
 
 EagleCanvas.prototype.parseVia = function(via) {
-	var x = parseFloat(via.getAttribute('x'));
-	var y = parseFloat(via.getAttribute('y'));
-	var layers = via.getAttribute('extent');
-	var drill = parseFloat(via.getAttribute('drill'));
-	return {'x':x, 'y':y, 'drill':drill, 'layers':layers};
+	return {'x':parseFloat(via.getAttribute('x')), 
+	        'y':parseFloat(via.getAttribute('y')), 
+ 	        'drill':parseFloat(via.getAttribute('drill')), 
+	        'layers':via.getAttribute('extent')};
 }
 
 EagleCanvas.prototype.parseWire = function(wire) {
-	var x1 = parseFloat(wire.getAttribute('x1'));
-	var y1 = parseFloat(wire.getAttribute('y1'));
-	var x2 = parseFloat(wire.getAttribute('x2'));
-	var y2 = parseFloat(wire.getAttribute('y2'));
-	var layer = parseInt(wire.getAttribute('layer'));
 	var width = parseFloat(wire.getAttribute('width'));
 	if (width <= 0.0) width = this.minLineWidth;
 
-	return {'x1':x1,'y1':y1,'x2':x2,'y2':y2,'width':width,'layer':layer};
+	return {'x1':parseFloat(wire.getAttribute('x1')),
+        	'y1':parseFloat(wire.getAttribute('y1')),
+        	'x2':parseFloat(wire.getAttribute('x2')),
+        	'y2':parseFloat(wire.getAttribute('y2')),
+        	'width':width,
+        	'layer':parseInt(wire.getAttribute('layer'))};
 }
 
 EagleCanvas.prototype.parseText = function(text) {
-	var x = parseFloat(text.getAttribute('x'));
-	var y = parseFloat(text.getAttribute('y'));
-	var size = parseFloat(text.getAttribute('size'));
-	var layer = parseInt(text.getAttribute('layer'));
-	var font = text.getAttribute('font');
 	var content = text.textContent;
 	if (!content) content = "";
-	return {'x':x,'y':y,'size':size,'layer':layer,'font':font,'content':content};
+	return {'x'      : parseFloat(text.getAttribute('x')),
+	        'y'      : parseFloat(text.getAttribute('y')),
+	        'size'   : parseFloat(text.getAttribute('size')),
+	        'layer'  : parseInt(text.getAttribute('layer')),
+	        'font'   : text.getAttribute('font'),
+	        'content': content};
 }
 
 EagleCanvas.prototype.parseElement = function(elem) {
-	var elemName = elem.getAttribute('name');
-	var elemValue = elem.getAttribute('value');
-	var elemPackage = elem.getAttribute('package');
-	var elemX = parseFloat(elem.getAttribute('x'));
-	var elemY = parseFloat(elem.getAttribute('y'));
 	var elemRot = elem.getAttribute('rot') || "R0";
 	var elemMatrix = this.matrixForRot(elemRot);
-	var elemMirror = elemRot.indexOf('M') == 0;
-	var elemSmashed = elem.getAttribute('smashed') && (elem.getAttribute('smashed').toUpperCase() == 'YES');
-	var attribs = {};
+	
+	var attribs = {}
 	var elemAttribs = elem.getElementsByTagName('attribute');
 	for (var attribIdx = 0; attribIdx < elemAttribs.length; attribIdx++) {
-		var elemAttrib = elemAttribs.item(attribIdx);
+		var elemAttrib = elemAttribs[attribIdx];
 		var attribDict = {};
 		var name = elemAttrib.getAttribute('name');
 		if (name) {
 			attribDict.name = name;
-			if (elemAttrib.getAttribute('x')) attribDict.x = parseFloat(elemAttrib.getAttribute('x'));
-			if (elemAttrib.getAttribute('y')) attribDict.y = parseFloat(elemAttrib.getAttribute('y'));
-			if (elemAttrib.getAttribute('size')) attribDict.size = parseFloat(elemAttrib.getAttribute('size'));
-			if (elemAttrib.getAttribute('layer')) attribDict.layer = parseInt(elemAttrib.getAttribute('layer'));
+			if (elemAttrib.getAttribute('x'))     { attribDict.x = parseFloat(elemAttrib.getAttribute('x')); }
+			if (elemAttrib.getAttribute('y'))     { attribDict.y = parseFloat(elemAttrib.getAttribute('y')); }
+			if (elemAttrib.getAttribute('size'))  { attribDict.size = parseFloat(elemAttrib.getAttribute('size')); }
+			if (elemAttrib.getAttribute('layer')) { attribDict.layer = parseInt(elemAttrib.getAttribute('layer')); }
 			attribDict.font = elemAttrib.getAttribute('font');
 
 			var rot = elemAttrib.getAttribute('rot');
@@ -407,25 +402,24 @@ EagleCanvas.prototype.parseElement = function(elem) {
 		}
 	}
 	return {
-		'package':elemPackage,
-		'name':elemName,
-		'value':elemValue,
-		'x':elemX,
-		'y':elemY,
-		'rot':elemRot,
-		'matrix':elemMatrix,
-		'mirror':elemMirror,
-		'smashed':elemSmashed,
-		'attributes':attribs,
-		'padSignals':{}			//to be filled later
+		'pkg'   : elem.getAttribute('package'),
+		'name'      : elem.getAttribute('name'),
+		'value'     : elem.getAttribute('value'),
+		'x'         : parseFloat(elem.getAttribute('x')),
+		'y'         : parseFloat(elem.getAttribute('y')),
+		'rot'       : elemRot,
+		'matrix'    : elemMatrix,
+		'mirror'    : elemRot.indexOf('M') == 0,
+		'smashed'   : elem.getAttribute('smashed') && (elem.getAttribute('smashed').toUpperCase() == 'YES'),
+		'attributes': attribs,
+		'padSignals': {}			//to be filled later
 	};
 };
 
 EagleCanvas.prototype.parseLayer = function(layer) {
-	var number = parseInt(layer.getAttribute('number'));
-	var name = layer.getAttribute('name');
-	var color = parseInt(layer.getAttribute('color'));
-	return {'name':name, 'number':number, 'color':color};
+	return {'name'  : layer.getAttribute('name'), 
+	        'number': parseInt(layer.getAttribute('number')), 
+	        'color' : parseInt(layer.getAttribute('color'))};
 }
 
 // ---------------
@@ -436,16 +430,21 @@ EagleCanvas.prototype.draw = function() {
 	var canvas = document.getElementById(this.canvasId);
 	var ctx = canvas.getContext('2d');
 
-   	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-   	ctx.save();
+	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	ctx.save();
 	
-	ctx.transform(this.scale * (this.boardFlipped ? -1.0 : 1.0), 0, 0, -this.scale, 0, ctx.canvas.height);
-	ctx.translate((this.boardFlipped ? -this.nativeBounds[2] : -this.nativeBounds[0]), -this.nativeBounds[1]);
-	var layerOrder = (this.boardFlipped) ? this.reverseRenderLayerOrder : this.renderLayerOrder;
+	ctx.transform(this.scale * (this.boardFlipped ? -1.0 : 1.0), 
+	              0, 
+								0, 
+								-this.scale, 
+								0, 
+								ctx.canvas.height);
+	ctx.translate( (this.boardFlipped ? -this.nativeBounds[2] : -this.nativeBounds[0]),
+	               -this.nativeBounds[1]);
+	var layerOrder = this.boardFlipped ? this.reverseRenderLayerOrder : this.renderLayerOrder;
 	for (var layerKey in layerOrder) {
 		var layerId = layerOrder[layerKey];
-		if (!this.shownLayers[layerId]) continue;
+		if (!this.shownLayers[layerId]) { continue };
 		this.layerRenderFunctions[layerId](this,ctx);
 	}
 
@@ -458,16 +457,14 @@ EagleCanvas.prototype.drawPlainWires = function(layer, ctx) {
 	ctx.lineCap = 'round';
 	ctx.strokeStyle = this.layerColor(layer.color);
 
-	var layerWires = this.plainWires[layer.number];
-	if (!layerWires) return;
-	for (var wireIdx in layerWires) {
-		var wire = layerWires[wireIdx];
-	   	ctx.beginPath();
+	var layerWires = this.plainWires[layer.number] || [];
+	layerWires.forEach(function(wire){
+		ctx.beginPath();
 		ctx.moveTo(wire.x1, wire.y1);
 		ctx.lineTo(wire.x2, wire.y2);
 		ctx.lineWidth = wire.width;
 		ctx.stroke();
-	}
+	})
 }
 
 EagleCanvas.prototype.drawSignalWires = function(layer, ctx) {
@@ -529,11 +526,11 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 		var highlight = (this.highlightedItem && (this.highlightedItem.type=='element') && (this.highlightedItem.name==elem.name)); 
 		var color = highlight ? this.highlightColor(layer.color) : this.layerColor(layer.color);
 
-		var package = this.packagesByName[elem.package];
+		var pkg = this.packagesByName[elem.pkg];
 		var rotMat = elem.matrix;
 
-		for (var smdIdx in package.smds) {
-			var smd = package.smds[smdIdx];
+		for (var smdIdx in pkg.smds) {
+			var smd = pkg.smds[smdIdx];
 			var layerNum = smd.layer;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
 			if (layer.number != layerNum) continue;
@@ -561,8 +558,8 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 			ctx.fill();
 		}
 
-		for (var wireIdx in package.wires) {
-			var wire = package.wires[wireIdx];
+		for (var wireIdx in pkg.wires) {
+			var wire = pkg.wires[wireIdx];
 			var layerNum = wire.layer;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
 			if (layer.number != layerNum) continue;
@@ -579,7 +576,7 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 		}
 
 		var smashed = elem.smashed;
-		var textCollection = smashed ? elem.attributes : package.texts;	//smashed : use elememt attributes instead of package texts
+		var textCollection = smashed ? elem.attributes : pkg.texts;	//smashed : use elememt attributes instead of package texts
 		for (var textIdx in textCollection) {
 			var text = textCollection[textIdx];
 			var layerNum = text.layer;
@@ -659,11 +656,11 @@ EagleCanvas.prototype.hitTestElements = function(layer, x, y) {
 
 	for (var elemKey in this.elements) {
 		var elem = this.elements[elemKey];
-		var package = this.packagesByName[elem.package];
+		var pkg = this.packagesByName[elem.pkg];
 
 		var rotMat = elem.matrix;
 
-		var bbox = package.bbox;
+		var bbox = pkg.bbox;
 		if (bbox) {
 			var layerNum = this.eagleLayersByName['Top'].number;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
@@ -681,8 +678,8 @@ EagleCanvas.prototype.hitTestElements = function(layer, x, y) {
 			}
 		}
 
-		for (var smdIdx in package.smds) {
-			var smd = package.smds[smdIdx];
+		for (var smdIdx in pkg.smds) {
+			var smd = pkg.smds[smdIdx];
 			var layerNum = smd.layer;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
 			if (layer.number != layerNum) continue;
@@ -787,8 +784,11 @@ EagleCanvas.prototype.matrixForRot = function(rot) {
 }
 
 EagleCanvas.prototype.mirrorLayer = function(layerIdx) {
-	if (layerIdx == 1) return 16;
-	else if (layerIdx == 16) return 1;
+	if (layerIdx == 1) { 
+		return 16; 
+	} else if (layerIdx == 16) {
+		return 1;
+	}
 	var name = this.layersByNumber[layerIdx].name;
 	var prefix = name.substring(0,1);
 	if (prefix == 't') {
@@ -828,10 +828,10 @@ EagleCanvas.prototype.calculateBounds = function() {
 	//Elements
 	for (var elemKey in this.elements) {
 		var elem = this.elements[elemKey];
-		var package = this.packagesByName[elem.package];
+		var pkg = this.packagesByName[elem.pkg];
 		var rotMat = elem.matrix;
-		for (var smdIdx in package.smds) {
-			var smd = package.smds[smdIdx];
+		for (var smdIdx in pkg.smds) {
+			var smd = pkg.smds[smdIdx];
 			var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1;
 			var y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1;
 			var x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2;
@@ -841,8 +841,8 @@ EagleCanvas.prototype.calculateBounds = function() {
 			if (y1 < minY) minY = y1; if (y1 > maxY) maxY = y1;
 			if (y2 < minY) minY = y2; if (y2 > maxY) maxY = y2;
 		}
-		for (var wireIdx in package.wires) {
-			var wire = package.wires[wireIdx];
+		for (var wireIdx in pkg.wires) {
+			var wire = pkg.wires[wireIdx];
 			var x1 = elem.x + rotMat[0]*wire.x1 + rotMat[1]*wire.y1;
 			var y1 = elem.y + rotMat[2]*wire.x1 + rotMat[3]*wire.y1;
 			var x2 = elem.x + rotMat[0]*wire.x2 + rotMat[1]*wire.y2;
