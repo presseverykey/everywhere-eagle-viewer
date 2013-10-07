@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 	'vector';
+    src: url('mplus-1m-regular.eot');
+    src: url('mplus-1m-regular.eot?#iefix') format('embedded-opentype'),
+         url('mplus-1m-regular.woff') format('woff'),
+         url('mplus-1m-regular.ttf') format('truetype'),
+         url('mplus-1m-regular.svg#m_1mregular') format('svg');
+    font-weight:	normal;
+    font-style:		normal;
+}
