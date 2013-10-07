@@ -39,14 +39,22 @@ var itemHints = {
 
 };
 
+function stupidWebfontTrick(eagle) {
+	// see http://stackoverflow.com/a/8223543/27408
+	var i = new Image()
+	i.src = "../fonts/osifont.woff"
+	i.onerror = function() {
+		eagle.draw()
+		setTimeout(function(){eagle.draw()}, 50)
+	};
+
+	updateCheckboxes()
+	selectItem(null)
+}
 function init() {
 		eaglecanvas = new EagleCanvas('canvas');
-		eaglecanvas.loadURL('board.brd');
+		eaglecanvas.loadURL('board.brd', stupidWebfontTrick);
 		eaglecanvas.setScaleToFit('outer');
-//	window.setTimeout(function(){
-//		updateCheckboxes();
-//		selectItem(null);
-//	},1000);
 }
 
 function showFrontSide(e) {

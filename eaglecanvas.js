@@ -187,7 +187,7 @@ EagleCanvas.prototype.setHighlightedItem = function(item) {
 // --- LOADING ---
 // ---------------
 
-EagleCanvas.prototype.loadURL = function(url) {
+EagleCanvas.prototype.loadURL = function(url, cb) {
 	this.url = url;
 	var request = new XMLHttpRequest(),
 			self = this;
@@ -195,6 +195,7 @@ EagleCanvas.prototype.loadURL = function(url) {
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
         	self.loadText(request.responseText);
+					cb(self)
 	    }
 	};
 	request.send(null);
@@ -429,8 +430,9 @@ EagleCanvas.prototype.parseLayer = function(layer) {
 // ---------------
 
 EagleCanvas.prototype.draw = function() {
+	p("draw")
 	var canvas = document.getElementById(this.canvasId),
-	    ctx = canvas.getContext('2d');
+	    ctx    = canvas.getContext('2d');
 
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	ctx.save();
@@ -867,7 +869,7 @@ EagleCanvas.prototype.calculateBounds = function() {
 	return [minX, minY, maxX, maxY];
 }
 
-EagleCanvas.prototype.scaleToFit = function() {
+EagleCanvas.prototype.scaleToFit = function(a) {
 	if (!this.scaleToFitId) { return; }
 	var fitElement = document.getElementById(this.scaleToFitId);
 	if (!fitElement) { return; }

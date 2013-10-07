@@ -1,7 +1,7 @@
 // Seriously not meant for production!
 // (should be obvious)
 // XMLHttpRequest won't work via filesystem.
-
+// to use: install go ... type $ go run server.go
 package main
 
 import (
