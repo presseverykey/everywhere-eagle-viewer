@@ -1,10 +1,6 @@
 @font-face {
     font-family: 	'vector';
-    src: url('mplus-1m-regular.eot');
-    src: url('mplus-1m-regular.eot?#iefix') format('embedded-opentype'),
-         url('mplus-1m-regular.woff') format('woff'),
-         url('mplus-1m-regular.ttf') format('truetype'),
-         url('mplus-1m-regular.svg#m_1mregular') format('svg');
+    src: url('../fonts/osifont.woff') format('woff');
     font-weight:	normal;
     font-style:		normal;
 }
