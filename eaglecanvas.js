@@ -482,17 +482,15 @@ EagleCanvas.prototype.drawSignalWires = function(layer, ctx) {
 
 		var signalLayers = this.signalItems[signalKey];
 		var layerItems = signalLayers[layer.number];
-		if (!layerItems) continue;
-		var layerWires = layerItems['wires'];
-		if (!layerWires) continue;
-		for (var wireIdx in layerWires) {
-			var wire = layerWires[wireIdx];
-	    	ctx.beginPath();
+		if (!layerItems) { continue; }
+		var layerWires = layerItems['wires'] || [];
+		layerWires.forEach(function(wire) {
+			ctx.beginPath();
 			ctx.moveTo(wire.x1, wire.y1);
 			ctx.lineTo(wire.x2, wire.y2);
 			ctx.lineWidth = wire.width;
 			ctx.stroke();
-		}
+		})
 	}
 }
 
@@ -504,16 +502,14 @@ EagleCanvas.prototype.drawSignalVias = function(layersName, ctx, color) {
 	for (var signalKey in this.signalItems) {
 		var signalLayers = this.signalItems[signalKey];
 		var layerItems = signalLayers[layersName];
-		if (!layerItems) continue;
-		var layerVias = layerItems['vias'];
-		if (!layerVias) continue;
-		for (var viaIdx in layerVias) {
-			var via = layerVias[viaIdx];
-		    ctx.beginPath();
-		    ctx.arc(via.x, via.y, 0.75 * via.drill, 0, 2 * Math.PI, false);
+		if (!layerItems) {continue;}
+		var layerVias = layerItems['vias'] || [];
+		layerVias.forEach(function(via) {
+			ctx.beginPath();
+			ctx.arc(via.x, via.y, 0.75 * via.drill, 0, 2 * Math.PI, false);
 			ctx.lineWidth = 0.5 * via.drill;
-      		ctx.stroke();
-		}
+			ctx.stroke();
+		})
 	}
 }
 
@@ -524,16 +520,15 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 		var elem = this.elements[elemKey];
 		
 		var highlight = (this.highlightedItem && (this.highlightedItem.type=='element') && (this.highlightedItem.name==elem.name)); 
-		var color = highlight ? this.highlightColor(layer.color) : this.layerColor(layer.color);
+		var color     = highlight ? this.highlightColor(layer.color) : this.layerColor(layer.color);
 
-		var pkg = this.packagesByName[elem.pkg];
+		var pkg    = this.packagesByName[elem.pkg];
 		var rotMat = elem.matrix;
 
-		for (var smdIdx in pkg.smds) {
-			var smd = pkg.smds[smdIdx];
+			pkg.smds.forEach(function(smd) {
 			var layerNum = smd.layer;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
-			if (layer.number != layerNum) continue;
+			if (layer.number != layerNum) { return; }
 			//Note that rotation might be not axis aligned, so we have do transform all corners
 			var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1;	//top left
 			var y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1;
@@ -556,13 +551,12 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 			ctx.lineTo(x4,y4);
 			ctx.closePath();
 			ctx.fill();
-		}
+		}, this)
 
-		for (var wireIdx in pkg.wires) {
-			var wire = pkg.wires[wireIdx];
+		pkg.wires.forEach(function(wire) {
 			var layerNum = wire.layer;
-			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
-			if (layer.number != layerNum) continue;
+			if (elem.mirror) { layerNum = this.mirrorLayer(layerNum); }
+			if (layer.number != layerNum) { return ; }
 			var x1 = elem.x + rotMat[0]*wire.x1 + rotMat[1]*wire.y1;
 			var y1 = elem.y + rotMat[2]*wire.x1 + rotMat[3]*wire.y1;
 			var x2 = elem.x + rotMat[0]*wire.x2 + rotMat[1]*wire.y2;
@@ -573,7 +567,7 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 			ctx.lineTo(x2,y2);
 			ctx.strokeStyle = color;
 			ctx.stroke();
-		}
+		})
 
 		var smashed = elem.smashed;
 		var textCollection = smashed ? elem.attributes : pkg.texts;	//smashed : use elememt attributes instead of package texts
