@@ -40,13 +40,13 @@ var itemHints = {
 };
 
 function init() {
-	window.setTimeout(function(){
 		eaglecanvas = new EagleCanvas('canvas');
 		eaglecanvas.loadURL('board.brd');
 		eaglecanvas.setScaleToFit('outer');
-		updateCheckboxes();
-		selectItem(null);
-	},1000);
+//	window.setTimeout(function(){
+//		updateCheckboxes();
+//		selectItem(null);
+//	},1000);
 }
 
 function showFrontSide(e) {

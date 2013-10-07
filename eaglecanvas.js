@@ -189,12 +189,12 @@ EagleCanvas.prototype.setHighlightedItem = function(item) {
 
 EagleCanvas.prototype.loadURL = function(url) {
 	this.url = url;
-	var request = new XMLHttpRequest();
-	var that = this;
+	var request = new XMLHttpRequest(),
+			self = this;
 	request.open('GET', this.url, true);
     request.onreadystatechange = function () {
         if (request.readyState == 4) {
-        	that.loadText(request.responseText);
+        	self.loadText(request.responseText);
 	    }
 	};
 	request.send(null);
@@ -206,7 +206,7 @@ EagleCanvas.prototype.loadText = function(text) {
 	this.boardXML = parser.parseFromString(this.text,"text/xml");
 	this.parse();
 	this.nativeBounds = this.calculateBounds();
-	this.nativeSize = [this.nativeBounds[2]-this.nativeBounds[0],this.nativeBounds[3]-this.nativeBounds[1]];
+	this.nativeSize   = [this.nativeBounds[2]-this.nativeBounds[0],this.nativeBounds[3]-this.nativeBounds[1]];
 	this.scaleToFit();
 }
 
@@ -295,19 +295,19 @@ EagleCanvas.prototype.parse = function() {
 		for (var wireIdx = 0; wireIdx < wires.length; wireIdx++) {
 			var wire = wires[wireIdx];
 			var wireDict = this.parseWire(wire);
-			if (wireDict.x1 < bbox[0]) bbox[0] = wireDict.x1;
-			if (wireDict.x1 > bbox[2]) bbox[2] = wireDict.x1;
-			if (wireDict.y1 < bbox[1]) bbox[1] = wireDict.y1;
-			if (wireDict.y1 > bbox[3]) bbox[3] = wireDict.y1;
-			if (wireDict.x2 < bbox[0]) bbox[0] = wireDict.x2;
-			if (wireDict.x2 > bbox[2]) bbox[2] = wireDict.x2;
-			if (wireDict.y2 < bbox[1]) bbox[1] = wireDict.y2;
-			if (wireDict.y2 > bbox[3]) bbox[3] = wireDict.y2;
+			if (wireDict.x1 < bbox[0]) { bbox[0] = wireDict.x1; }
+			if (wireDict.x1 > bbox[2]) { bbox[2] = wireDict.x1; }
+			if (wireDict.y1 < bbox[1]) { bbox[1] = wireDict.y1; }
+			if (wireDict.y1 > bbox[3]) { bbox[3] = wireDict.y1; }
+			if (wireDict.x2 < bbox[0]) { bbox[0] = wireDict.x2; }
+			if (wireDict.x2 > bbox[2]) { bbox[2] = wireDict.x2; }
+			if (wireDict.y2 < bbox[1]) { bbox[1] = wireDict.y2; }
+			if (wireDict.y2 > bbox[3]) { bbox[3] = wireDict.y2; }
 			packageWires.push(wireDict);
 		}
-		if ((bbox[0] >= bbox[2]) || (bbox[1] >= bbox[3])) bbox = null;
-		var packageTexts = [];
-		var texts = pkg.getElementsByTagName('text');
+		if ((bbox[0] >= bbox[2]) || (bbox[1] >= bbox[3])) { bbox = null; }
+		var packageTexts = [],
+		    texts        = pkg.getElementsByTagName('text');
 		for (var textIdx = 0; textIdx < texts.length; textIdx++) {
 			var text = texts[textIdx];
 			packageTexts.push(this.parseText(text));
@@ -321,12 +321,12 @@ EagleCanvas.prototype.parse = function() {
 	this.plainWires = {};
 	var plains = this.boardXML.getElementsByTagName('plain');	//Usually only one
 	for (var plainIdx = 0; plainIdx < plains.length; plainIdx++) {
-		var plain = plains[plainIdx];
-		var wires = plain.getElementsByTagName('wire');
+		var plain = plains[plainIdx],
+		    wires = plain.getElementsByTagName('wire');
 		for (var wireIdx = 0; wireIdx < wires.length; wireIdx++) {
-			var wire = wires[wireIdx];
-			var wireDict = this.parseWire(wire);
-			var layer = wireDict.layer;
+			var wire = wires[wireIdx],
+			    wireDict = this.parseWire(wire),
+			    layer = wireDict.layer;
 			if (!this.plainWires[layer]) this.plainWires[layer] = [];
 			this.plainWires[layer].push(wireDict);
 		}
@@ -334,10 +334,10 @@ EagleCanvas.prototype.parse = function() {
 }
 
 EagleCanvas.prototype.parseSmd = function(smd) {
-	var smdX  = parseFloat(smd.getAttribute('x'));
-	var smdY  = parseFloat(smd.getAttribute('y'));
-	var smdDX = parseFloat(smd.getAttribute('dx'));
-	var smdDY = parseFloat(smd.getAttribute('dy'));
+	var smdX  = parseFloat(smd.getAttribute('x')),
+	    smdY  = parseFloat(smd.getAttribute('y')),
+	    smdDX = parseFloat(smd.getAttribute('dx')),
+	    smdDY = parseFloat(smd.getAttribute('dy'));
 
 	return {'x1'   : smdX-0.5*smdDX,
 	        'y1'   : smdY-0.5*smdDY,
@@ -378,15 +378,17 @@ EagleCanvas.prototype.parseText = function(text) {
 }
 
 EagleCanvas.prototype.parseElement = function(elem) {
-	var elemRot = elem.getAttribute('rot') || "R0";
-	var elemMatrix = this.matrixForRot(elemRot);
+	var elemRot    = elem.getAttribute('rot') || "R0",
+	    elemMatrix = this.matrixForRot(elemRot);
 	
-	var attribs = {}
-	var elemAttribs = elem.getElementsByTagName('attribute');
+	var attribs = {},
+	    elemAttribs = elem.getElementsByTagName('attribute');
 	for (var attribIdx = 0; attribIdx < elemAttribs.length; attribIdx++) {
-		var elemAttrib = elemAttribs[attribIdx];
-		var attribDict = {};
-		var name = elemAttrib.getAttribute('name');
+
+		var elemAttrib = elemAttribs[attribIdx],
+		    attribDict = {},
+		    name = elemAttrib.getAttribute('name');
+
 		if (name) {
 			attribDict.name = name;
 			if (elemAttrib.getAttribute('x'))     { attribDict.x = parseFloat(elemAttrib.getAttribute('x')); }
@@ -396,7 +398,7 @@ EagleCanvas.prototype.parseElement = function(elem) {
 			attribDict.font = elemAttrib.getAttribute('font');
 
 			var rot = elemAttrib.getAttribute('rot');
-			if (!rot) rot = "R0";
+			if (!rot) { rot = "R0"; }
 			attribDict.rot = rot;
 			attribs[name] = attribDict;
 		}
@@ -427,8 +429,8 @@ EagleCanvas.prototype.parseLayer = function(layer) {
 // ---------------
 
 EagleCanvas.prototype.draw = function() {
-	var canvas = document.getElementById(this.canvasId);
-	var ctx = canvas.getContext('2d');
+	var canvas = document.getElementById(this.canvasId),
+	    ctx = canvas.getContext('2d');
 
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	ctx.save();
@@ -439,8 +441,9 @@ EagleCanvas.prototype.draw = function() {
 								-this.scale, 
 								0, 
 								ctx.canvas.height);
-	ctx.translate( (this.boardFlipped ? -this.nativeBounds[2] : -this.nativeBounds[0]),
+	ctx.translate( (this.boardFlipped ? -this.nativeBounds[2] : -(this.nativeBounds[0])),
 	               -this.nativeBounds[1]);
+
 	var layerOrder = this.boardFlipped ? this.reverseRenderLayerOrder : this.renderLayerOrder;
 	for (var layerKey in layerOrder) {
 		var layerId = layerOrder[layerKey];
@@ -452,7 +455,7 @@ EagleCanvas.prototype.draw = function() {
 }
 
 EagleCanvas.prototype.drawPlainWires = function(layer, ctx) {
-	if (!layer) return;
+	if (!layer) { return; }
 
 	ctx.lineCap = 'round';
 	ctx.strokeStyle = this.layerColor(layer.color);
@@ -468,7 +471,7 @@ EagleCanvas.prototype.drawPlainWires = function(layer, ctx) {
 }
 
 EagleCanvas.prototype.drawSignalWires = function(layer, ctx) {
-	if (!layer) return;
+	if (!layer) { return; }
 	var layerNumber = layer.number;
 
 	ctx.lineCap = 'round';
@@ -480,8 +483,8 @@ EagleCanvas.prototype.drawSignalWires = function(layer, ctx) {
 		ctx.strokeStyle = color;
 
 
-		var signalLayers = this.signalItems[signalKey];
-		var layerItems = signalLayers[layer.number];
+		var signalLayers = this.signalItems[signalKey],
+		    layerItems = signalLayers[layer.number];
 		if (!layerItems) { continue; }
 		var layerWires = layerItems['wires'] || [];
 		layerWires.forEach(function(wire) {
@@ -500,8 +503,8 @@ EagleCanvas.prototype.drawSignalVias = function(layersName, ctx, color) {
 	ctx.strokeStyle = color;
 
 	for (var signalKey in this.signalItems) {
-		var signalLayers = this.signalItems[signalKey];
-		var layerItems = signalLayers[layersName];
+		var signalLayers = this.signalItems[signalKey],
+		    layerItems = signalLayers[layersName];
 		if (!layerItems) {continue;}
 		var layerVias = layerItems['vias'] || [];
 		layerVias.forEach(function(via) {
@@ -526,41 +529,41 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 		var rotMat = elem.matrix;
 
 			pkg.smds.forEach(function(smd) {
-			var layerNum = smd.layer;
-			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
-			if (layer.number != layerNum) { return; }
-			//Note that rotation might be not axis aligned, so we have do transform all corners
-			var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1;	//top left
-			var y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1;
-			var x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y1;	//top right
-			var y2 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y1;
-			var x3 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2;	//bottom right
-			var y3 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y2;
-			var x4 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y2;	//bottom left
-			var y4 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y2;
+				var layerNum = smd.layer;
+				if (elem.mirror) { layerNum = this.mirrorLayer(layerNum); }
+				if (layer.number != layerNum) { return; }
+				//Note that rotation might be not axis aligned, so we have do transform all corners
+				var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1,	//top left
+						y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1,
+						x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y1,	//top right
+						y2 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y1,
+						x3 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2,	//bottom right
+						y3 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y2,
+						x4 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y2,	//bottom left
+						y4 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y2;
 
-			var padName = smd.name;
-			var signalName = elem.padSignals[padName];
-			var highlightPad = (this.highlightedItem && (this.highlightedItem.type=='signal') && (this.highlightedItem.name==signalName)); 
+				var padName = smd.name,
+						signalName = elem.padSignals[padName],
+						highlightPad = (this.highlightedItem && (this.highlightedItem.type=='signal') && (this.highlightedItem.name==signalName)); 
 
-			ctx.fillStyle = highlightPad ? this.highlightColor(layer.color) : color;
-			ctx.beginPath();
-			ctx.moveTo(x1,y1);
-			ctx.lineTo(x2,y2);
-			ctx.lineTo(x3,y3);
-			ctx.lineTo(x4,y4);
-			ctx.closePath();
-			ctx.fill();
-		}, this)
+				ctx.fillStyle = highlightPad ? this.highlightColor(layer.color) : color;
+				ctx.beginPath();
+				ctx.moveTo(x1,y1);
+				ctx.lineTo(x2,y2);
+				ctx.lineTo(x3,y3);
+				ctx.lineTo(x4,y4);
+				ctx.closePath();
+				ctx.fill();
+			}, this)
 
 		pkg.wires.forEach(function(wire) {
 			var layerNum = wire.layer;
 			if (elem.mirror) { layerNum = this.mirrorLayer(layerNum); }
 			if (layer.number != layerNum) { return ; }
-			var x1 = elem.x + rotMat[0]*wire.x1 + rotMat[1]*wire.y1;
-			var y1 = elem.y + rotMat[2]*wire.x1 + rotMat[3]*wire.y1;
-			var x2 = elem.x + rotMat[0]*wire.x2 + rotMat[1]*wire.y2;
-			var y2 = elem.y + rotMat[2]*wire.x2 + rotMat[3]*wire.y2;
+			var x1 = elem.x + rotMat[0]*wire.x1 + rotMat[1]*wire.y1,
+			    y1 = elem.y + rotMat[2]*wire.x1 + rotMat[3]*wire.y1,
+			    x2 = elem.x + rotMat[0]*wire.x2 + rotMat[1]*wire.y2,
+			    y2 = elem.y + rotMat[2]*wire.x2 + rotMat[3]*wire.y2;
 			ctx.beginPath();
 			ctx.lineWidth = wire.width;
 			ctx.moveTo(x1,y1);
@@ -569,8 +572,8 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 			ctx.stroke();
 		})
 
-		var smashed = elem.smashed;
-		var textCollection = smashed ? elem.attributes : pkg.texts;	//smashed : use element attributes instead of package texts
+		var smashed = elem.smashed,
+		    textCollection = smashed ? elem.attributes : pkg.texts;	//smashed : use element attributes instead of package texts
 		for (var textIdx in textCollection) {
 			var text = textCollection[textIdx];
 			var layerNum = text.layer;
@@ -579,22 +582,22 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 			}
 			if (layer.number != layerNum) { continue; }
 
-			var content = smashed ? null : text.content;
-			var attribName = smashed ? text.name : ((text.content.indexOf('>') == 0) ? text.content.substring(1) : null);
+			var content = smashed ? null : text.content,
+			    attribName = smashed ? text.name : ((text.content.indexOf('>') == 0) ? text.content.substring(1) : null);
 			if (attribName == "NAME")  { content = elem.name;  }
 			if (attribName == "VALUE") { content = elem.value; }
 			if (!content) { continue; }
 
-			var x = smashed ? text.x : (elem.x + rotMat[0]*text.x + rotMat[1]*text.y);
-			var y = smashed ? text.y : (elem.y + rotMat[2]*text.x + rotMat[3]*text.y);
-			var rot = smashed ? text.rot : elem.rot;
-			var size = text.size;
+			var x = smashed ? text.x : (elem.x + rotMat[0]*text.x + rotMat[1]*text.y),
+			    y = smashed ? text.y : (elem.y + rotMat[2]*text.x + rotMat[3]*text.y),
+			    rot = smashed ? text.rot : elem.rot,
+			    size = text.size;
 
 			//rotation from 90.1 to 270 causes Eagle to draw labels 180 degrees rotated with top right anchor point
-			var degrees  = parseFloat(rot.substring((rot.indexOf('M')==0) ? 2 : 1));
-			var flipText = ((degrees > 90) && (degrees <=270));
-			var textRot  = this.matrixForRot(rot);
-			var fontSize = 10;
+			var degrees  = parseFloat(rot.substring((rot.indexOf('M')==0) ? 2 : 1)),
+			    flipText = ((degrees > 90) && (degrees <=270)),
+			    textRot  = this.matrixForRot(rot),
+			    fontSize = 10;
 
 			ctx.save();
 			ctx.fillStyle = color;
@@ -651,8 +654,8 @@ EagleCanvas.prototype.hitTestElements = function(layer, x, y) {
 	if (!layer) { return; }
 
 	for (var elemKey in this.elements) {
-		var elem = this.elements[elemKey];
-		var pkg = this.packagesByName[elem.pkg];
+		var elem = this.elements[elemKey],
+		    pkg = this.packagesByName[elem.pkg];
 
 		var rotMat = elem.matrix;
 
@@ -661,14 +664,14 @@ EagleCanvas.prototype.hitTestElements = function(layer, x, y) {
 			var layerNum = this.eagleLayersByName['Top'].number;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
 			if (layer.number != layerNum) continue;
-			var x1 = elem.x + rotMat[0]*bbox[0] + rotMat[1]*bbox[1];	//top left
-			var y1 = elem.y + rotMat[2]*bbox[0] + rotMat[3]*bbox[1];
-			var x2 = elem.x + rotMat[0]*bbox[2] + rotMat[1]*bbox[1];	//top right
-			var y2 = elem.y + rotMat[2]*bbox[2] + rotMat[3]*bbox[1];
-			var x3 = elem.x + rotMat[0]*bbox[2] + rotMat[1]*bbox[3];	//bottom right
-			var y3 = elem.y + rotMat[2]*bbox[2] + rotMat[3]*bbox[3];
-			var x4 = elem.x + rotMat[0]*bbox[0] + rotMat[1]*bbox[3];	//bottom left
-			var y4 = elem.y + rotMat[2]*bbox[0] + rotMat[3]*bbox[3];
+			var x1 = elem.x + rotMat[0]*bbox[0] + rotMat[1]*bbox[1],	//top left
+			    y1 = elem.y + rotMat[2]*bbox[0] + rotMat[3]*bbox[1],
+			    x2 = elem.x + rotMat[0]*bbox[2] + rotMat[1]*bbox[1],	//top right
+			    y2 = elem.y + rotMat[2]*bbox[2] + rotMat[3]*bbox[1],
+			    x3 = elem.x + rotMat[0]*bbox[2] + rotMat[1]*bbox[3],	//bottom right
+			    y3 = elem.y + rotMat[2]*bbox[2] + rotMat[3]*bbox[3],
+			    x4 = elem.x + rotMat[0]*bbox[0] + rotMat[1]*bbox[3],	//bottom left
+			    y4 = elem.y + rotMat[2]*bbox[0] + rotMat[3]*bbox[3];
 			if (this.pointInRect(x,y,x1,y1,x2,y2,x3,y3,x4,y4)) {
 				return {'type':'element','name':elem.name};
 			}
@@ -679,22 +682,21 @@ EagleCanvas.prototype.hitTestElements = function(layer, x, y) {
 			var layerNum = smd.layer;
 			if (elem.mirror) layerNum = this.mirrorLayer(layerNum);
 			if (layer.number != layerNum) continue;
-			var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1;	//top left
-			var y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1;
-			var x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y1;	//top right
-			var y2 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y1;
-			var x3 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2;	//bottom right
-			var y3 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y2;
-			var x4 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y2;	//bottom left
-			var y4 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y2;
+			var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1,	//top left
+			    y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1,
+			    x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y1,	//top right
+			    y2 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y1,
+			    x3 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2,	//bottom right
+			    y3 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y2,
+			    x4 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y2,	//bottom left
+			    y4 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y2;
 			if (this.pointInRect(x,y,x1,y1,x2,y2,x3,y3,x4,y4)) {
 				var padName = smd.name;
 				if (padName) {
 					var signalName = elem.padSignals[padName];
-					if (signalName) return {'type':'signal','name':signalName};
+					if (signalName) { return {'type':'signal','name':signalName}; }
 				}
 				return {'type':'element','name':elem.name};
-
 			}
 		}
 	}
@@ -710,12 +712,12 @@ EagleCanvas.prototype.hitTestSignals = function(layer, x, y) {
 		var layerWires = layerItems['wires'];
 		if (!layerWires) { continue; }
 		for (var wireIdx in layerWires) {
-			var wire = layerWires[wireIdx];
-			var x1 = wire.x1;
-			var y1 = wire.y1;
-			var x2 = wire.x2;
-			var y2 = wire.y2;
-			var width = wire.width;
+			var wire = layerWires[wireIdx],
+			    x1 = wire.x1,
+			    y1 = wire.y1,
+			    x2 = wire.x2,
+			    y2 = wire.y2,
+			    width = wire.width;
 			if (this.pointInLine(x,y,x1,y1,x2,y2,width)) { 
 				return {'type':'signal','name':signalName}; 
 			}
@@ -735,8 +737,8 @@ EagleCanvas.prototype.pointInLine = function(x, y, x1, y1, x2, y2, width) {
 
 	var s = ((y - y1) * (y2-y1) - (x - x1) * (x1-x2)) / length2;				// s = param of line p1..p2 (0..1)
 	if ((s >= 0) && (s <= 1)) {													//between p1 and p2
-		var px = x1 + s * (x2-x1);
-		var py = y1 + s * (y2-y1);
+		var px = x1 + s * (x2-x1),
+		    py = y1 + s * (y2-y1);
 		if (((x-px)*(x-px)+(y-py)*(y-py)) < width2) {
 			return true;	//end 2
 		}
@@ -816,12 +818,12 @@ EagleCanvas.prototype.calculateBounds = function() {
 	for (var layerKey in this.plainWires) {
 		var lines = this.plainWires[layerKey];
 		for (var lineKey in lines) {
-			var line = lines[lineKey];
-			var x1 = line.x1;
-			var x2 = line.x2;
-			var y1 = line.y1;
-			var y2 = line.y2;
-			var width = line.width;
+			var line = lines[lineKey],
+			    x1 = line.x1,
+			    x2 = line.x2,
+			    y1 = line.y1,
+			    y2 = line.y2,
+			    width = line.width;
 			if (x1-width < minX) { minX = x1-width; } if (x1+width > maxX) { maxX = x1+width; }
 			if (x2-width < minX) { minX = x2-width; } if (x2+width > maxX) { maxX = x2+width; }
 			if (y1-width < minY) { minY = y1-width; } if (y1+width > maxY) { maxY = y1+width; }
@@ -835,23 +837,23 @@ EagleCanvas.prototype.calculateBounds = function() {
 		var pkg = this.packagesByName[elem.pkg];
 		var rotMat = elem.matrix;
 		for (var smdIdx in pkg.smds) {
-			var smd = pkg.smds[smdIdx];
-			var x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1;
-			var y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1;
-			var x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2;
-			var y2 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y2;
+			var smd = pkg.smds[smdIdx],
+			    x1 = elem.x + rotMat[0]*smd.x1 + rotMat[1]*smd.y1,
+			    y1 = elem.y + rotMat[2]*smd.x1 + rotMat[3]*smd.y1,
+			    x2 = elem.x + rotMat[0]*smd.x2 + rotMat[1]*smd.y2,
+			    y2 = elem.y + rotMat[2]*smd.x2 + rotMat[3]*smd.y2;
 			if (x1 < minX) { minX = x1; } if (x1 > maxX) { maxX = x1; }
 			if (x2 < minX) { minX = x2; } if (x2 > maxX) { maxX = x2; }
 			if (y1 < minY) { minY = y1; } if (y1 > maxY) { maxY = y1; }
 			if (y2 < minY) { minY = y2; } if (y2 > maxY) { maxY = y2; }
 		}
 		for (var wireIdx in pkg.wires) {
-			var wire = pkg.wires[wireIdx];
-			var x1 = elem.x + rotMat[0]*wire.x1 + rotMat[1]*wire.y1;
-			var y1 = elem.y + rotMat[2]*wire.x1 + rotMat[3]*wire.y1;
-			var x2 = elem.x + rotMat[0]*wire.x2 + rotMat[1]*wire.y2;
-			var y2 = elem.y + rotMat[2]*wire.x2 + rotMat[3]*wire.y2;
-			var width = wire.width;
+			var wire = pkg.wires[wireIdx],
+			    x1 = elem.x + rotMat[0]*wire.x1 + rotMat[1]*wire.y1,
+			    y1 = elem.y + rotMat[2]*wire.x1 + rotMat[3]*wire.y1,
+			    x2 = elem.x + rotMat[0]*wire.x2 + rotMat[1]*wire.y2,
+			    y2 = elem.y + rotMat[2]*wire.x2 + rotMat[3]*wire.y2,
+			    width = wire.width;
 			if (x1-width < minX) { minX = x1-width; } if (x1+width > maxX) { maxX = x1+width; }
 			if (x2-width < minX) { minX = x2-width; } if (x2+width > maxX) { maxX = x2+width; }
 			if (y1-width < minY) { minY = y1-width; } if (y1+width > maxY) { maxY = y1+width; }
