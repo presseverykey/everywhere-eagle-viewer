@@ -529,7 +529,6 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 
 		var pkg    = this.packagesByName[elem.pkg];
 		var rotMat = elem.matrix;
-
 			pkg.smds.forEach(function(smd) {
 				var layerNum = smd.layer;
 				if (elem.mirror) { layerNum = this.mirrorLayer(layerNum); }
@@ -572,7 +571,7 @@ EagleCanvas.prototype.drawElements = function(layer, ctx) {
 			ctx.lineTo(x2,y2);
 			ctx.strokeStyle = color;
 			ctx.stroke();
-		})
+		}, this)
 
 		var smashed = elem.smashed,
 		    textCollection = smashed ? elem.attributes : pkg.texts;	//smashed : use element attributes instead of package texts
