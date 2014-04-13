@@ -430,7 +430,6 @@ EagleCanvas.prototype.parseLayer = function(layer) {
 // ---------------
 
 EagleCanvas.prototype.draw = function() {
-	p("draw")
 	var canvas = document.getElementById(this.canvasId),
 	    ctx    = canvas.getContext('2d');
 

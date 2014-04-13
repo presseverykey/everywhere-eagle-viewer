@@ -1,4 +1,4 @@
-anywhere-eagle-viewer
+everywhere-eagle-viewer
 =====================
 
 Javascript viewer for Eagle Board layouts ...
